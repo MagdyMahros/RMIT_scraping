@@ -40,7 +40,7 @@ course_data = {'Level_Code': '', 'University': 'RMIT University', 'City': '', 'C
 possible_cities = {'canberra': 'Canberra', 'bruce': 'Bruce', 'mumbai': 'Mumbai', 'melbourne': 'Melbourne',
                    'brisbane': 'Brisbane', 'sydney': 'Sydney', 'queensland': 'Queensland', 'ningbo': 'Ningbo',
                    'shanghai': 'Shanghai', 'bhutan': 'Bhutan', 'online': 'Online', 'hangzhou': 'Hangzhou',
-                   'hanoi': 'Hanoi', 'bundoora': 'melbourne', 'brunswick': 'melbourne', 'bendigo': 'Victoria'}
+                   'hanoi': 'Hanoi', 'bundoora': 'Bundoora', 'brunswick': 'Brunswick', 'bendigo': 'Victoria'}
 
 possible_languages = {'Japanese': 'Japanese', 'French': 'French', 'Italian': 'Italian', 'Korean': 'Korean',
                       'Indonesian': 'Indonesian', 'Chinese': 'Chinese', 'Spanish': 'Spanish'}
@@ -116,7 +116,21 @@ for each_url in course_links_file:
                                     course_data['Description'] = des_list
                                     print('COURSE DESCRIPTION: ', des_list)
 
-    # CITY / DURATION
+    # CITY
+    location_tag = soup.find('div', class_='description-1 quick-lcl-location')
+    if location_tag:
+        location_text = location_tag.get_text().lower()
+        if 'city campus' in location_text or 'melbourne' in location_text:
+            actual_cities.append('melbourne')
+        if 'brunswick' in location_text:
+            actual_cities.append('brunswick')
+        if 'bundoora' in location_text:
+            actual_cities.append('bundoora')
+        if 'online' in location_text:
+            actual_cities.append('online')
+        print('CITY: ', actual_cities)
+
+    # DURATION / FULL-TIME, PART-TIME
     info_table = soup.find('table', class_='table program-table')
     if info_table:
         table_body = info_table.find('tbody')
@@ -126,15 +140,6 @@ for each_url in course_links_file:
                 table_columns = table_row.find_all('td')
                 if table_columns:
                     for i, column in enumerate(table_columns):
-                        if i == 1:
-                            location = column.get_text().lower().strip()
-                            if 'city campus' in location:
-                                actual_cities.append('melbourne')
-                            if 'brunswick' in location:
-                                actual_cities.append('brunswick')
-                            if 'bundoora' in location:
-                                actual_cities.append('bundoora')
-                            print('CITY: ', actual_cities)
                         if i == 2:
                             duration_text = column.get_text().lower()
                             converted_duration = dura.convert_duration(duration_text)
@@ -167,5 +172,6 @@ for each_url in course_links_file:
             course_data['Prerequisite_1_grade'] = atar
             print('ATAR: ', atar)
         else:
-            remarks_list.append('ATAR IS: ' + str(atar_tag.get_text().strip()))
+            remarks_list.append('ATAR IS: ' + str(atar_tag.get_text().strip().replace('*', '')))
             print(remarks_list)
+
