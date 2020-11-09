@@ -72,3 +72,17 @@ for each_url in course_links_file:
         title_text = course_title.get_text().strip()
         course_data['Course'] = title_text
         print('COURSE TITLE: ', title_text)
+
+    # DECIDE THE LEVEL CODE
+    for i in level_key:
+        for j in level_key[i]:
+            if j in course_data['Course']:
+                course_data['Level_Code'] = i
+    print('COURSE LEVEL CODE: ', course_data['Level_Code'])
+
+    # DECIDE THE FACULTY
+    for i in faculty_key:
+        for j in faculty_key[i]:
+            if j.lower() in course_data['Course'].lower():
+                course_data['Faculty'] = i
+    print('COURSE FACULTY: ', course_data['Faculty'])
