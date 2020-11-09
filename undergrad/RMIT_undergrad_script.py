@@ -11,7 +11,7 @@ import bs4 as bs4
 import os
 import copy
 from CustomMethods import TemplateData
-from CustomMethods import DurationConverter
+from CustomMethods import DurationConverter as dura
 
 option = webdriver.ChromeOptions()
 option.add_argument(" - incognito")
@@ -115,7 +115,7 @@ for each_url in course_links_file:
                                     course_data['Description'] = des_list
                                     print('COURSE DESCRIPTION: ', des_list)
 
-    # CITY
+    # CITY / DURATION
     info_table = soup.find('table', class_='table program-table')
     if info_table:
         table_body = info_table.find('tbody')
@@ -134,3 +134,24 @@ for each_url in course_links_file:
                             if 'bundoora' in location:
                                 actual_cities.append('bundoora')
                             print('CITY: ', actual_cities)
+                        if i == 2:
+                            duration_text = column.get_text().lower()
+                            converted_duration = dura.convert_duration(duration_text)
+                            if converted_duration is not None:
+                                duration_list = list(converted_duration)
+                                if duration_list[0] == 1 and 'Years' in duration_list[1]:
+                                    duration_list[1] = 'Year'
+                                if duration_list[0] == 1 and 'Months' in duration_list[1]:
+                                    duration_list[1] = 'Month'
+                                course_data['Duration'] = duration_list[0]
+                                course_data['Duration_Time'] = duration_list[1]
+                                print('Duration: ', str(duration_list[0]) + ' / ' + duration_list[1])
+                            if 'full-time' in duration_text or 'full time' in duration_text:
+                                course_data['Full_Time'] = 'yes'
+                            else:
+                                course_data['Full_Time'] = 'no'
+                            if 'part-time' in duration_text or 'part time' in duration_text:
+                                course_data['Part_Time'] = 'yes'
+                            else:
+                                course_data['Part_Time'] = 'no'
+                            print('PART-TIME/FULL-TIME: ', course_data['Part_Time'] + ' / ' + course_data['Full_Time'])
