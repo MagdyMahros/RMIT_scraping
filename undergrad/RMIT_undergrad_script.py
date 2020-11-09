@@ -6,7 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.support.ui import Select
 import bs4 as bs4
 import os
 import copy
@@ -18,7 +19,7 @@ option.add_argument(" - incognito")
 option.add_argument("headless")
 exec_path = Path(os.getcwd().replace('\\', '/'))
 exec_path = exec_path.parent.__str__() + '/Libraries/Google/v86/chromedriver.exe'
-browser = webdriver.Chrome(executable_path=exec_path, options=option)
+browser = webdriver.Chrome(executable_path=exec_path, options=option)#, options=option
 
 # read the url from each file into a list
 course_links_file_path = Path(os.getcwd().replace('\\', '/'))
@@ -122,12 +123,30 @@ for each_url in course_links_file:
         location_text = location_tag.get_text().lower()
         if 'city campus' in location_text or 'melbourne' in location_text:
             actual_cities.append('melbourne')
+            course_data['Offline'] = 'yes'
+            course_data['Face_to_Face'] = 'yes'
+        else:
+            course_data['Offline'] = 'no'
+            course_data['Face_to_Face'] = 'no'
         if 'brunswick' in location_text:
             actual_cities.append('brunswick')
+            course_data['Offline'] = 'yes'
+            course_data['Face_to_Face'] = 'yes'
+        else:
+            course_data['Offline'] = 'no'
+            course_data['Face_to_Face'] = 'no'
         if 'bundoora' in location_text:
             actual_cities.append('bundoora')
+            course_data['Offline'] = 'yes'
+            course_data['Face_to_Face'] = 'yes'
+        else:
+            course_data['Offline'] = 'no'
+            course_data['Face_to_Face'] = 'no'
         if 'online' in location_text:
             actual_cities.append('online')
+            course_data['Online'] = 'yes'
+        else:
+            course_data['Online'] = 'no'
         print('CITY: ', actual_cities)
 
     # DURATION / FULL-TIME, PART-TIME
@@ -200,3 +219,23 @@ for each_url in course_links_file:
                                         career_list = ' / '.join(career_list)
                                         course_data['Career_Outcomes'] = career_list
                                         print('CAREER OUTCOMES: ', career_list)
+
+    # AVAILABILITY + INT FEES
+    int_fees = soup.find('div', class_='description-1 fee-int-details')
+    if int_fees:
+        fee_p = int_fees.find('p')
+        if fee_p:
+            fee_text = fee_p.get_text().lower()
+            print(fee_text)
+            if 'not applicable' in fee_text:
+                course_data['Availability'] = 'D'
+                remarks_list.append('int_fee is: ' + str(fee_text))
+            else:
+                course_data['Availability'] = 'A'
+                fee_n = re.search(r"\d+(?:,\d+)|\d+", fee_text)
+                if fee_n:
+                    fee = fee_n.group()
+                    course_data['Int_Fees'] = fee
+                    print('INR_FEE: ', fee)
+
+
