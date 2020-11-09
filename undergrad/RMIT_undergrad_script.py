@@ -3,11 +3,6 @@ import re
 import time
 from pathlib import Path
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.support.ui import Select
 import bs4 as bs4
 import os
 import copy
@@ -19,7 +14,7 @@ option.add_argument(" - incognito")
 option.add_argument("headless")
 exec_path = Path(os.getcwd().replace('\\', '/'))
 exec_path = exec_path.parent.__str__() + '/Libraries/Google/v86/chromedriver.exe'
-browser = webdriver.Chrome(executable_path=exec_path, options=option)#, options=option
+browser = webdriver.Chrome(executable_path=exec_path, options=option)
 
 # read the url from each file into a list
 course_links_file_path = Path(os.getcwd().replace('\\', '/'))
@@ -34,9 +29,9 @@ course_data = {'Level_Code': '', 'University': 'RMIT University', 'City': '', 'C
                'Course': '', 'Int_Fees': '', 'Local_Fees': '', 'Currency': 'AUD', 'Currency_Time': 'year',
                'Duration': '', 'Duration_Time': '', 'Full_Time': 'yes', 'Part_Time': 'yes', 'Prerequisite_1': '',
                'Prerequisite_2': 'IELTS', 'Prerequisite_3': '', 'Prerequisite_1_grade': '', 'Prerequisite_2_grade': '6.0',
-               'Prerequisite_3_grade': '', 'Website': '', 'Course_Lang': '', 'Availability': 'A', 'Description': '',
-               'Career_Outcomes': '', 'Online': '', 'Offline': '', 'Distance': '', 'Face_to_Face': '',
-               'Blended': '', 'Remarks': ''}
+               'Prerequisite_3_grade': '', 'Website': '', 'Course_Lang': '', 'Availability': '', 'Description': '',
+               'Career_Outcomes': '', 'Online': '', 'Offline': '', 'Distance': 'no', 'Face_to_Face': '',
+               'Blended': 'no', 'Remarks': ''}
 
 possible_cities = {'canberra': 'Canberra', 'bruce': 'Bruce', 'mumbai': 'Mumbai', 'melbourne': 'Melbourne',
                    'brisbane': 'Brisbane', 'sydney': 'Sydney', 'queensland': 'Queensland', 'ningbo': 'Ningbo',
@@ -222,6 +217,7 @@ for each_url in course_links_file:
 
     # AVAILABILITY + INT FEES
     int_fees = soup.find('div', class_='description-1 fee-int-details')
+    course_data['Int_Fees'] = ''
     if int_fees:
         fee_p = int_fees.find('p')
         if fee_p:
@@ -238,4 +234,35 @@ for each_url in course_links_file:
                     course_data['Int_Fees'] = fee
                     print('INR_FEE: ', fee)
 
+    # duplicating entries with multiple cities for each city
+    for i in actual_cities:
+        course_data['City'] = possible_cities[i]
+        course_data_all.append(copy.deepcopy(course_data))
+    del actual_cities
+    course_data['Remarks'] = remarks_list
+    del remarks_list
+    # TABULATE THE DATA
+    desired_order_list = ['Level_Code', 'University', 'City', 'Course', 'Faculty', 'Int_Fees', 'Local_Fees',
+                          'Currency', 'Currency_Time', 'Duration', 'Duration_Time', 'Full_Time', 'Part_Time',
+                          'Prerequisite_1', 'Prerequisite_2', 'Prerequisite_3', 'Prerequisite_1_grade',
+                          'Prerequisite_2_grade', 'Prerequisite_3_grade', 'Website', 'Course_Lang', 'Availability',
+                          'Description', 'Career_Outcomes', 'Country', 'Online', 'Offline', 'Distance',
+                          'Face_to_Face',
+                          'Blended', 'Remarks']
+
+    course_dict_keys = set().union(*(d.keys() for d in course_data_all))
+
+    with open(csv_file, 'w', encoding='utf-8', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, course_dict_keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(course_data_all)
+
+    with open(csv_file, 'r', encoding='utf-8') as infile, open('RMIT_undergrad_ordered.csv', 'w', encoding='utf-8',
+                                                               newline='') as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=desired_order_list)
+        # reorder the header first
+        writer.writeheader()
+        for row in csv.DictReader(infile):
+            # writes the reordered rows to the new file
+            writer.writerow(row)
 
