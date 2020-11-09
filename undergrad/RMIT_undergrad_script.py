@@ -175,3 +175,28 @@ for each_url in course_links_file:
             remarks_list.append('ATAR IS: ' + str(atar_tag.get_text().strip().replace('*', '')))
             print(remarks_list)
 
+    # CAREER OUTCOMES
+    career_tag = soup.find('h2', class_='section-title-wrapper__header', text=re.compile('Career', re.IGNORECASE))
+    if career_tag:
+        career_list = []
+        career_tag_parent = career_tag.find_parent('div')
+        if career_tag_parent:
+            c_parent = career_tag_parent.find_parent('div')
+            if c_parent:
+                c_parent_1 = c_parent.find_parent('div')
+                if c_parent_1:
+                    c_section = c_parent_1.find_parent('section')
+                    if c_section:
+                        career_tag_container = c_section.find_parent('div', class_='MainSectionPad')
+                        if career_tag_container:
+                            caree_tag = career_tag_container.find_next_sibling('div')
+                            if caree_tag:
+                                caree_ul = caree_tag.find('ul')
+                                if caree_ul:
+                                    caree_li_list = caree_ul.find_all('li')
+                                    if caree_li_list:
+                                        for li in caree_li_list:
+                                            career_list.append(li.get_text())
+                                        career_list = ' / '.join(career_list)
+                                        course_data['Career_Outcomes'] = career_list
+                                        print('CAREER OUTCOMES: ', career_list)
