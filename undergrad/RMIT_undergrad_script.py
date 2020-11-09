@@ -40,11 +40,7 @@ course_data = {'Level_Code': '', 'University': 'RMIT University', 'City': '', 'C
 possible_cities = {'canberra': 'Canberra', 'bruce': 'Bruce', 'mumbai': 'Mumbai', 'melbourne': 'Melbourne',
                    'brisbane': 'Brisbane', 'sydney': 'Sydney', 'queensland': 'Queensland', 'ningbo': 'Ningbo',
                    'shanghai': 'Shanghai', 'bhutan': 'Bhutan', 'online': 'Online', 'hangzhou': 'Hangzhou',
-                   'hanoi': 'Hanoi'}
-possible_countries = {'canberra': 'Australia', 'mumbai': 'India', 'melbourne': 'Australia',
-                      'brisbane': 'Australia', 'sydney': 'Australia', 'queensland': 'Australia', 'ningbo': 'China',
-                      'shanghai': 'China', 'bhutan': 'Bhutan', 'online': 'Online', 'hangzhou': 'China',
-                      'hanoi': 'Vietnam'}
+                   'hanoi': 'Hanoi', 'bundoora': 'melbourne', 'brunswick': 'melbourne', 'bendigo': 'Victoria'}
 
 possible_languages = {'Japanese': 'Japanese', 'French': 'French', 'Italian': 'Italian', 'Korean': 'Korean',
                       'Indonesian': 'Indonesian', 'Chinese': 'Chinese', 'Spanish': 'Spanish'}
@@ -118,3 +114,23 @@ for each_url in course_links_file:
                                     des_list = ' '.join(des_list)
                                     course_data['Description'] = des_list
                                     print('COURSE DESCRIPTION: ', des_list)
+
+    # CITY
+    info_table = soup.find('table', class_='table program-table')
+    if info_table:
+        table_body = info_table.find('tbody')
+        if table_body:
+            table_row = table_body.find('tr')
+            if table_row:
+                table_columns = table_row.find_all('td')
+                if table_columns:
+                    for i, column in enumerate(table_columns):
+                        if i == 1:
+                            location = column.get_text().lower().strip()
+                            if 'city campus' in location:
+                                actual_cities.append('melbourne')
+                            if 'brunswick' in location:
+                                actual_cities.append('brunswick')
+                            if 'bundoora' in location:
+                                actual_cities.append('bundoora')
+                            print('CITY: ', actual_cities)
