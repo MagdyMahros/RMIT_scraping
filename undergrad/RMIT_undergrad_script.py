@@ -51,6 +51,7 @@ faculty_key = TemplateData.faculty_key  # dictionary of course levels
 
 # GET EACH COURSE LINK
 for each_url in course_links_file:
+    remarks_list = []
     actual_cities = []
     browser.get(each_url)
     pure_url = each_url.strip()
@@ -155,3 +156,16 @@ for each_url in course_links_file:
                             else:
                                 course_data['Part_Time'] = 'no'
                             print('PART-TIME/FULL-TIME: ', course_data['Part_Time'] + ' / ' + course_data['Full_Time'])
+
+    #ATAR
+    atar_tag = soup.find('div', class_='atar-number atrNumber-medium quick-lcl-entry-score')
+    if atar_tag:
+        atar_number = re.search(r"\d+(?:.\d+)|\d+",  atar_tag.get_text())
+        if atar_number:
+            atar = atar_number.group()
+            course_data['Prerequisite_1'] = 'year 12'
+            course_data['Prerequisite_1_grade'] = atar
+            print('ATAR: ', atar)
+        else:
+            remarks_list.append('ATAR IS: ' + str(atar_tag.get_text().strip()))
+            print(remarks_list)
