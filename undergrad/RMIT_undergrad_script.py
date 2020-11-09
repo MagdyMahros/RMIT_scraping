@@ -94,3 +94,27 @@ for each_url in course_links_file:
         else:
             course_data['Course_Lang'] = 'English'
     print('COURSE LANGUAGE: ', course_data['Course_Lang'])
+
+    # COURSE DESCRIPTION
+    overview_tag = soup.find('h2', class_='section-title-wrapper__header', text=re.compile('Overview', re.IGNORECASE))
+    if overview_tag:
+        des_list = []
+        overview_tag_parent = overview_tag.find_parent('div')
+        if overview_tag_parent:
+            parent = overview_tag_parent.find_parent('div')
+            if parent:
+                parent_1 = parent.find_parent('div')
+                if parent_1:
+                    section = parent_1.find_parent('section')
+                    if section:
+                        overview_tag_container = section.find_parent('div', class_='MainSectionPad')
+                        if overview_tag_container:
+                            desc_tag = overview_tag_container.find_next_sibling('div')
+                            if desc_tag:
+                                desc_p_list = desc_tag.find_all('p')
+                                if desc_p_list:
+                                    for p in desc_p_list:
+                                        des_list.append(p.get_text())
+                                    des_list = ' '.join(des_list)
+                                    course_data['Description'] = des_list
+                                    print('COURSE DESCRIPTION: ', des_list)
